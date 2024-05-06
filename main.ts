@@ -1,38 +1,34 @@
-#! /usr/bin/env node
-import inquirer from "inquirer";
-import { differenceInSeconds } from "date-fns";
-const res = await inquirer.prompt({
-    type: "number",
-    name: "userinput",
-    message: "Please enter the amount of second:",
-    validate : (input) => {
-        if (isNaN(input)){
-            return "Please enter valid number"
-        } else if (input > 60){
-            return "Seconds must be in 60"
+import  inquirer from 'inquirer';
+import chalk from "chalk";
+
+function startCountdown(duration: number) {
+    let remainingSeconds = duration;
+
+    const intervalId = setInterval(() => {
+        remainingSeconds--;
+
+        if (remainingSeconds <= 0) {
+            clearInterval(intervalId);
+            console.log(chalk.italic.bold.red("\t\t\t\tTime's up!"));
         } else {
-            return true
+            console.log(chalk.italic.blueBright(`Time remaining: ${remainingSeconds} seconds`));
         }
-    }
-    
-});
-let input = res.userinput
-
-function startTime(val:number) {
-    const intTime = new Date ().setSeconds(new Date().getSeconds() + val)
-    const intervalTime = new Date(intTime)
-    setInterval(() => {
-        const currentTime = new Date()
-        const timeDiff = differenceInSeconds(intervalTime,currentTime)
-        if (timeDiff <= 0){
-            console.log('Time has expired')
-            process.exit()
-        }
-        const min = Math.floor((timeDiff%(3600*24))/3600)
-        const sec = Math.floor((timeDiff % 60))
-        console.log(`${min.toString().padStart(2,"0")}:${sec.toString().padStart(2, "0")}`);
-    },1000)
+    }, 1000);
 }
-startTime(input)
 
+async function main() {
+    const { duration } = await inquirer.prompt([
+        {
+            type: "number",
+            name: "duration",
+            message: chalk.bold.green("Enter the duration of the countdown in seconds:"),
+            validate: (input: number) => {
+                return input > 0 ? true : chalk.bold.yellow("Please enter a valid duration (greater than 0).");
+            }
+        }
+    ]);
 
+    startCountdown(duration);
+}
+
+main();
